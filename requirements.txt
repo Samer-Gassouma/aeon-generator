@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+transformers
+torch
+requests
+pydantic
+python-multipart
+trimesh
+numpy
