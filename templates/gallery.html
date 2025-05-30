@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEON Weapon AI - Model Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-sword me-2"></i>
+                AEON Weapon AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link active" href="/gallery">Gallery</a>
+                <a class="nav-link" href="#" onclick="downloadBatch()">
+                    <i class="fas fa-download"></i> Download All
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="display-5">
+                    <i class="fas fa-gallery-thumbnails text-primary"></i>
+                    Weapon Gallery
+                </h1>
+                <p class="lead">View and manage your AI-generated weapon models</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" onclick="window.location.href='/'">
+                    <i class="fas fa-plus"></i> Generate New Weapons
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="search-input" 
+                                       placeholder="Search weapons..." onkeyup="filterWeapons()">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="personality-filter" onchange="filterWeapons()">
+                                    <option value="">All Personalities</option>
+                                    <option value="aggressive_warrior">Aggressive Warrior</option>
+                                    <option value="strategic_mage">Strategic Mage</option>
+                                    <option value="defensive_guardian">Defensive Guardian</option>
+                                    <option value="agile_assassin">Agile Assassin</option>
+                                    <option value="elemental_mage">Elemental Mage</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="weapon-type-filter" onchange="filterWeapons()">
+                                    <option value="">All Types</option>
+                                    <option value="sword">Swords</option>
+                                    <option value="axe">Axes</option>
+                                    <option value="staff">Staffs</option>
+                                    <option value="dagger">Daggers</option>
+                                    <option value="mace">Maces</option>
+                                    <option value="shield">Shields</option>
+                                    <option value="orb">Orbs</option>
+                                    <option value="wand">Wands</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="sort-order" onchange="sortWeapons()">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="name">Name A-Z</option>
+                                    <option value="size">File Size</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <button class="btn btn-outline-danger" onclick="clearAllWeapons()">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="refreshGallery()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 id="total-count">0</h3>
+                        <p class="mb-0">Total Weapons</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 id="total-size">0 MB</h3>
+                        <p class="mb-0">Total Size</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 id="avg-size">0 KB</h3>
+                        <p class="mb-0">Average Size</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3 id="filtered-count">0</h3>
+                        <p class="mb-0">Showing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weapon Grid -->
+        <div class="row" id="weapons-grid">
+            <!-- Weapons will be loaded here -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading weapons...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div class="row" id="no-results" style="display: none;">
+            <div class="col-12 text-center">
+                <div class="card">
+                    <div class="card-body py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No weapons found</h4>
+                        <p class="text-muted">Try adjusting your search filters or generate some new weapons.</p>
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Generate Weapons
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weapon Detail Modal -->
+    <div class="modal fade" id="weaponModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-weapon-name">Weapon Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- 3D Model Viewer -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-cube"></i> 3D Model Preview
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="model-viewer" style="height: 400px; background: #f8f9fa; border-radius: 8px;">
+                                        <div class="d-flex align-items-center justify-content-center h-100">
+                                            <div class="text-center">
+                                                <i class="fas fa-cube fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">3D Model Viewer</p>
+                                                <small class="text-muted">Click "Load Model" to preview</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 text-center">
+                                        <button class="btn btn-primary" onclick="loadModel()">
+                                            <i class="fas fa-play"></i> Load Model
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="resetModel()">
+                                            <i class="fas fa-redo"></i> Reset View
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Weapon Info -->
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle"></i> Weapon Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-5">Name:</dt>
+                                        <dd class="col-sm-7" id="modal-weapon-full-name">-</dd>
+                                        
+                                        <dt class="col-sm-5">Type:</dt>
+                                        <dd class="col-sm-7" id="modal-weapon-type">-</dd>
+                                        
+                                        <dt class="col-sm-5">Damage:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge bg-danger" id="modal-weapon-damage">0</span>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-5">Speed:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge bg-success" id="modal-weapon-speed">0</span>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-5">Player:</dt>
+                                        <dd class="col-sm-7" id="modal-weapon-player">-</dd>
+                                        
+                                        <dt class="col-sm-5">Personality:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge bg-primary" id="modal-weapon-personality">-</span>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-5">File Size:</dt>
+                                        <dd class="col-sm-7" id="modal-weapon-size">-</dd>
+                                        
+                                        <dt class="col-sm-5">Created:</dt>
+                                        <dd class="col-sm-7" id="modal-weapon-created">-</dd>
+                                    </dl>
+                                    
+                                    <div class="mt-3">
+                                        <h6>Description:</h6>
+                                        <p class="text-muted" id="modal-weapon-description">-</p>
+                                    </div>
+                                    
+                                    <div class="mt-3 d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="downloadWeapon()">
+                                            <i class="fas fa-download"></i> Download Model
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="deleteWeapon()">
+                                            <i class="fas fa-trash"></i> Delete Weapon
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="confirm-message">
+                    Are you sure you want to proceed?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-action">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="/static/js/model-viewer.js"></script>
+    <script src="/static/js/app.js"></script>
+    
+    <script>
+        // Gallery-specific variables
+        let allWeapons = [];
+        let filteredWeapons = [];
+        let currentWeapon = null;
+        
+        // Initialize gallery
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWeapons();
+        });
+        
+        // Load all weapons
+        async function loadWeapons() {
+            try {
+                const response = await fetch('/api/weapons/list');
+                const data = await response.json();
+                
+                allWeapons = data.weapons || [];
+                filteredWeapons = [...allWeapons];
+                
+                displayWeapons();
+                updateStats();
+            } catch (error) {
+                console.error('Failed to load weapons:', error);
+                showError('Failed to load weapons');
+            }
+        }
+        
+        // Display weapons in grid
+        function displayWeapons() {
+            const grid = document.getElementById('weapons-grid');
+            const noResults = document.getElementById('no-results');
+            
+            if (filteredWeapons.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'flex';
+            noResults.style.display = 'none';
+            
+            grid.innerHTML = filteredWeapons.map(weapon => `
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4 weapon-card" 
+                     data-personality="${weapon.personality || ''}"
+                     data-type="${weapon.weapon_type || ''}"
+                     data-name="${weapon.filename}">
+                    <div class="card h-100 weapon-item">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-sword fa-3x text-primary weapon-icon"></i>
+                            </div>
+                            <h6 class="card-title text-truncate" title="${weapon.filename}">
+                                ${weapon.filename.replace('.obj', '').replace('weapon_', '').replace(/\d+_\d+/, '')}
+                            </h6>
+                            <p class="card-text small text-muted">
+                                Size: ${formatFileSize(weapon.size)}<br>
+                                Created: ${formatDate(weapon.created_at)}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-outline-primary btn-sm" 
+                                        onclick="viewWeapon('${weapon.filename}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" 
+                                        onclick="downloadSingleWeapon('${weapon.filename}')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" 
+                                        onclick="confirmDeleteWeapon('${weapon.filename}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Filter weapons
+        function filterWeapons() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const personalityFilter = document.getElementById('personality-filter').value;
+            const typeFilter = document.getElementById('weapon-type-filter').value;
+            
+            filteredWeapons = allWeapons.filter(weapon => {
+                const matchesSearch = weapon.filename.toLowerCase().includes(searchTerm);
+                const matchesPersonality = !personalityFilter || weapon.personality === personalityFilter;
+                const matchesType = !typeFilter || weapon.weapon_type === typeFilter;
+                
+                return matchesSearch && matchesPersonality && matchesType;
+            });
+            
+            displayWeapons();
+            updateStats();
+        }
+        
+        // Sort weapons
+        function sortWeapons() {
+            const sortOrder = document.getElementById('sort-order').value;
+            
+            filteredWeapons.sort((a, b) => {
+                switch (sortOrder) {
+                    case 'newest':
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    case 'oldest':
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    case 'name':
+                        return a.filename.localeCompare(b.filename);
+                    case 'size':
+                        return b.size - a.size;
+                    default:
+                        return 0;
+                }
+            });
+            
+            displayWeapons();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalSize = allWeapons.reduce((sum, weapon) => sum + weapon.size, 0);
+            const avgSize = allWeapons.length > 0 ? totalSize / allWeapons.length : 0;
+            
+            document.getElementById('total-count').textContent = allWeapons.length;
+            document.getElementById('total-size').textContent = formatFileSize(totalSize);
+            document.getElementById('avg-size').textContent = formatFileSize(avgSize);
+            document.getElementById('filtered-count').textContent = filteredWeapons.length;
+        }
+        
+        // View weapon details
+        function viewWeapon(filename) {
+            const weapon = allWeapons.find(w => w.filename === filename);
+            if (!weapon) return;
+            
+            currentWeapon = weapon;
+            
+            // Populate modal
+            document.getElementById('modal-weapon-name').textContent = filename;
+            document.getElementById('modal-weapon-full-name').textContent = filename;
+            document.getElementById('modal-weapon-type').textContent = weapon.weapon_type || 'Unknown';
+            document.getElementById('modal-weapon-damage').textContent = weapon.damage || '?';
+            document.getElementById('modal-weapon-speed').textContent = weapon.speed || '?';
+            document.getElementById('modal-weapon-player').textContent = weapon.player ? `Player ${weapon.player}` : 'Unknown';
+            document.getElementById('modal-weapon-personality').textContent = weapon.personality || 'Unknown';
+            document.getElementById('modal-weapon-size').textContent = formatFileSize(weapon.size);
+            document.getElementById('modal-weapon-created').textContent = formatDate(weapon.created_at);
+            document.getElementById('modal-weapon-description').textContent = weapon.description || 'No description available';
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('weaponModal')).show();
+        }
+        
+        // Utility functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+        
+        function refreshGallery() {
+            loadWeapons();
+        }
+        
+        // Download functions
+        function downloadSingleWeapon(filename) {
+            window.location.href = `/download/weapon/${filename}`;
+        }
+        
+        function downloadWeapon() {
+            if (currentWeapon) {
+                downloadSingleWeapon(currentWeapon.filename);
+            }
+        }
+        
+        function downloadBatch() {
+            window.location.href = '/download/batch';
+        }
+        
+        // Delete functions
+        function confirmDeleteWeapon(filename) {
+            document.getElementById('confirm-message').textContent = 
+                `Are you sure you want to delete "${filename}"? This action cannot be undone.`;
+            
+            document.getElementById('confirm-action').onclick = () => deleteWeaponConfirmed(filename);
+            
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        }
+        
+        async function deleteWeaponConfirmed(filename) {
+            try {
+                const weaponId = filename.replace('.obj', '');
+                const response = await fetch(`/api/weapons/${weaponId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+                    if (currentWeapon && currentWeapon.filename === filename) {
+                        bootstrap.Modal.getInstance(document.getElementById('weaponModal')).hide();
+                    }
+                    loadWeapons(); // Refresh the gallery
+                    showSuccess(`Weapon "${filename}" deleted successfully`);
+                } else {
+                    showError('Failed to delete weapon');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showError('Failed to delete weapon');
+            }
+        }
+        
+        function clearAllWeapons() {
+            document.getElementById('confirm-message').textContent = 
+                'Are you sure you want to delete ALL weapons? This action cannot be undone.';
+            
+            document.getElementById('confirm-action').onclick = clearAllWeaponsConfirmed;
+            
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        }
+        
+        async function clearAllWeaponsConfirmed() {
+            // This would require a bulk delete endpoint
+            showError('Bulk delete not implemented yet');
+        }
+    </script>
+</body>
+</html>

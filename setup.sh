@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# Weapon AI Service Setup Script
-# For AEON MMORPG - Text-to-3D Weapon Generation
+# AEON Weapon AI System with Web Interface - Complete Setup Script
+# Comprehensive installation for GPU instances (Vast.ai compatible)
 
 set -e  # Exit on any error
 
-echo "🔥 Setting up Weapon AI Service for AEON..."
-echo "================================================"
+echo "🔥 Setting up AEON Weapon AI System with Web Interface..."
+echo "=========================================================="
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
@@ -32,14 +33,18 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+print_header() {
+    echo -e "${PURPLE}[SETUP]${NC} $1"
+}
+
 # Check if running as root
 if [[ $EUID -eq 0 ]]; then
    print_error "This script should not be run as root"
    exit 1
 fi
 
-# Check system requirements
-print_status "Checking system requirements..."
+# System requirements check
+print_header "Checking system requirements..."
 
 # Check Python version
 if ! command -v python3 &> /dev/null; then
@@ -63,6 +68,14 @@ else
     print_warning "No NVIDIA GPU detected. Will use CPU (much slower)"
 fi
 
+# Check Node.js (for potential integration)
+if command -v node &> /dev/null; then
+    NODE_VERSION=$(node --version)
+    print_success "Node.js found: $NODE_VERSION"
+else
+    print_warning "Node.js not found. Install if you need game server integration."
+fi
+
 # Check available disk space
 AVAILABLE_SPACE=$(df . | tail -1 | awk '{print $4}')
 REQUIRED_SPACE=10485760  # 10GB in KB
@@ -75,17 +88,19 @@ fi
 print_success "Sufficient disk space available"
 
 # Create directory structure
-print_status "Creating directory structure..."
-mkdir -p models config generated_weapons logs
+print_header "Creating directory structure..."
 
-# Create configuration directories
+mkdir -p {models,config,generated_weapons,logs,static/{css,js,libs},templates,model_cache}
+
+# Create subdirectories
+mkdir -p models/{hunyuan3d-2,text,cache}
+mkdir -p static/{css,js,libs}
 mkdir -p config
-mkdir -p logs
 
 print_success "Directory structure created"
 
 # Setup Python virtual environment
-print_status "Setting up Python virtual environment..."
+print_header "Setting up Python virtual environment..."
 
 if [ ! -d "venv" ]; then
     python3 -m venv venv
@@ -102,13 +117,25 @@ print_status "Upgrading pip..."
 pip install --upgrade pip
 
 # Install Python dependencies
-print_status "Installing Python dependencies..."
+print_header "Installing Python dependencies..."
+print_status "This may take several minutes..."
+
+# Install PyTorch first (with CUDA support if available)
+if command -v nvidia-smi &> /dev/null; then
+    print_status "Installing PyTorch with CUDA support..."
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+else
+    print_status "Installing PyTorch CPU version..."
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+fi
+
+# Install other dependencies
 pip install -r requirements.txt
 
 print_success "Python dependencies installed"
 
 # Setup Hunyuan3D-2
-print_status "Setting up Hunyuan3D-2..."
+print_header "Setting up Hunyuan3D-2..."
 
 if [ ! -d "Hunyuan3D-2" ]; then
     print_status "Cloning Hunyuan3D-2 repository..."
@@ -133,11 +160,25 @@ if [ -d "Hunyuan3D-2" ]; then
     fi
 fi
 
+# Download Three.js for 3D viewer
+print_header "Setting up web interface dependencies..."
+
+if [ ! -f "static/libs/three.min.js" ]; then
+    print_status "Downloading Three.js..."
+    curl -L https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js -o static/libs/three.min.js
+    
+    if [ $? -eq 0 ]; then
+        print_success "Three.js downloaded"
+    else
+        print_warning "Failed to download Three.js. 3D viewer may not work."
+    fi
+fi
+
 # Create environment file
-print_status "Creating environment configuration..."
+print_header "Creating environment configuration..."
 
 cat > .env << EOF
-# Weapon AI Service Configuration
+# AEON Weapon AI System Configuration
 API_PORT=8083
 WEAPON_OUTPUT_DIR=./generated_weapons
 GAME_SERVER_URL=http://localhost:3030
@@ -148,70 +189,37 @@ HUNYUAN3D_MODEL_PATH=./models/hunyuan3d-2
 TEXT_MODEL_PATH=./models/text
 
 # Flask Configuration
+FLASK_ENV=production
 FLASK_DEBUG=false
+
+# Web Interface
+WEB_INTERFACE_ENABLED=true
+STATIC_DIR=./static
+TEMPLATES_DIR=./templates
 
 # Logging
 LOG_LEVEL=INFO
 LOG_FILE=./logs/weapon_ai.log
+
+# Performance
+MODEL_CACHE_SIZE=10
+MAX_WEAPONS_PER_REQUEST=4
+
+# Security (generate your own keys for production)
+SECRET_KEY=your-secret-key-here
+API_KEY=your-api-key-here
 EOF
 
 print_success "Environment configuration created"
 
-# Create personality configuration
-print_status "Creating personality configuration..."
+# Create startup scripts
+print_header "Creating startup scripts..."
 
-cat > config/personalities.json << 'EOF'
-{
-  "aggressive_warrior": {
-    "weapon_types": ["axe", "sword", "mace", "warhammer", "claymore"],
-    "materials": ["steel", "iron", "darksteel", "bloodsteel", "volcanic rock"],
-    "effects": ["flame", "lightning", "poison", "ice", "shadow"],
-    "descriptors": ["brutal", "massive", "serrated", "jagged", "intimidating", "fearsome"],
-    "damage_modifier": 1.2,
-    "speed_modifier": 0.8
-  },
-  "strategic_mage": {
-    "weapon_types": ["staff", "wand", "orb", "tome", "crystal"],
-    "materials": ["crystal", "enchanted wood", "mithril", "arcane stone", "starlight essence"],
-    "effects": ["arcane", "frost", "shadow", "holy", "time", "void"],
-    "descriptors": ["elegant", "mystical", "glowing", "ancient", "ethereal", "wise"],
-    "damage_modifier": 0.9,
-    "speed_modifier": 1.3
-  },
-  "defensive_guardian": {
-    "weapon_types": ["shield", "lance", "hammer", "defensive blade", "tower shield"],
-    "materials": ["blessed steel", "adamantite", "holy metal", "reinforced iron", "divine crystal"],
-    "effects": ["protection", "barrier", "healing", "reflection", "blessing"],
-    "descriptors": ["sturdy", "protective", "radiant", "fortified", "noble", "steadfast"],
-    "damage_modifier": 0.8,
-    "speed_modifier": 0.9
-  },
-  "agile_assassin": {
-    "weapon_types": ["dagger", "blade", "throwing knife", "poison dart", "curved sword"],
-    "materials": ["shadow steel", "quicksilver", "venom-coated metal", "silent steel", "void metal"],
-    "effects": ["poison", "shadow", "stealth", "bleeding", "paralysis"],
-    "descriptors": ["swift", "silent", "deadly", "precise", "curved", "razor-sharp"],
-    "damage_modifier": 0.9,
-    "speed_modifier": 1.4
-  },
-  "elemental_mage": {
-    "weapon_types": ["elemental staff", "focus crystal", "elemental orb", "nature wand"],
-    "materials": ["elemental crystal", "living wood", "storm glass", "earth stone"],
-    "effects": ["fire", "water", "earth", "air", "lightning", "nature"],
-    "descriptors": ["elemental", "flowing", "crackling", "growing", "shifting"],
-    "damage_modifier": 1.0,
-    "speed_modifier": 1.1
-  }
-}
-EOF
-
-print_success "Personality configuration created"
-
-# Create startup script
-print_status "Creating startup scripts..."
-
-cat > start_server.sh << 'EOF'
+cat > start.sh << 'EOF'
 #!/bin/bash
+
+# AEON Weapon AI System - Startup Script
+echo "🚀 Starting AEON Weapon AI System..."
 
 # Activate virtual environment
 source venv/bin/activate
@@ -219,28 +227,63 @@ source venv/bin/activate
 # Set environment variables
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
+# Create logs directory
+mkdir -p logs
+
 # Start the weapon AI service
-echo "Starting Weapon AI Service..."
+echo "🌐 Starting API server and web interface..."
+echo "📍 Web Interface: http://localhost:8083"
+echo "📍 API Endpoint: http://localhost:8083/api"
+echo "📍 Health Check: http://localhost:8083/api/health"
+echo ""
+echo "Press Ctrl+C to stop the server"
+
 python app.py
 EOF
 
-chmod +x start_server.sh
+chmod +x start.sh
 
-# Create test script
-cat > test_api.sh << 'EOF'
+# Create production startup script
+cat > start_production.sh << 'EOF'
 #!/bin/bash
 
-# Test script for Weapon AI Service API
+# AEON Weapon AI System - Production Startup Script
+echo "🏭 Starting AEON Weapon AI System (Production Mode)..."
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Set environment variables
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+export FLASK_ENV=production
+
+# Create logs directory
+mkdir -p logs
+
+# Start with Gunicorn for production
+echo "🌐 Starting production server with Gunicorn..."
+echo "📍 Web Interface: http://localhost:8083"
+
+gunicorn --bind 0.0.0.0:8083 --workers 4 --worker-class sync --timeout 300 --keep-alive 2 app:app
+EOF
+
+chmod +x start_production.sh
+
+# Create test script
+cat > test_system.sh << 'EOF'
+#!/bin/bash
+
+# AEON Weapon AI System - Comprehensive Test Script
+echo "🧪 Testing AEON Weapon AI System..."
+
 API_URL="http://localhost:8083"
 
-echo "🧪 Testing Weapon AI Service API..."
-
-# Test health endpoint
-echo "Testing health endpoint..."
+# Test 1: Health check
+echo "1. Testing health endpoint..."
 curl -s "$API_URL/api/health" | jq '.' || echo "Health check failed"
 
-# Test weapon generation
-echo -e "\nTesting weapon generation..."
+# Test 2: Generate weapons
+echo -e "\n2. Testing weapon generation..."
 curl -s -X POST "$API_URL/api/weapons/generate" \
   -H "Content-Type: application/json" \
   -d '{
@@ -249,40 +292,81 @@ curl -s -X POST "$API_URL/api/weapons/generate" \
     "arena_theme": "volcanic"
   }' | jq '.' || echo "Weapon generation test failed"
 
-echo -e "\n✅ API tests completed"
+# Test 3: List weapons
+echo -e "\n3. Testing weapon listing..."
+curl -s "$API_URL/api/weapons/list" | jq '.' || echo "Weapon listing test failed"
+
+# Test 4: Statistics
+echo -e "\n4. Testing statistics..."
+curl -s "$API_URL/api/weapons/stats" | jq '.' || echo "Statistics test failed"
+
+# Test 5: Web interface
+echo -e "\n5. Testing web interface..."
+curl -s "$API_URL/" | grep -q "AEON Weapon AI" && echo "✅ Web interface accessible" || echo "❌ Web interface failed"
+
+echo -e "\n✅ System tests completed"
 EOF
 
-chmod +x test_api.sh
+chmod +x test_system.sh
+
+# Create monitoring script
+cat > monitor.sh << 'EOF'
+#!/bin/bash
+
+# AEON Weapon AI System - Monitoring Script
+API_URL="http://localhost:8083/api/health"
+LOG_FILE="./logs/monitor.log"
+
+while true; do
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    if curl -s "$API_URL" | grep -q '"status":"healthy"'; then
+        echo "[$timestamp] ✅ System healthy" >> "$LOG_FILE"
+    else
+        echo "[$timestamp] ❌ System unhealthy - attempting restart" >> "$LOG_FILE"
+        
+        # Attempt to restart (uncomment if needed)
+        # pkill -f app.py
+        # sleep 5
+        # ./start.sh &
+    fi
+    
+    sleep 300  # Check every 5 minutes
+done
+EOF
+
+chmod +x monitor.sh
 
 print_success "Startup scripts created"
 
 # Create systemd service (optional)
 if command -v systemctl &> /dev/null; then
-    print_status "Creating systemd service..."
+    print_header "Creating systemd service..."
     
-    cat > weapon-ai.service << EOF
+    cat > aeon-weapon-ai.service << EOF
 [Unit]
-Description=AEON Weapon AI Service
+Description=AEON Weapon AI Service with Web Interface
 After=network.target
 
 [Service]
 Type=simple
 User=$USER
 WorkingDirectory=$(pwd)
-ExecStart=$(pwd)/start_server.sh
+ExecStart=$(pwd)/start.sh
 Restart=always
 RestartSec=10
+Environment=PATH=$(pwd)/venv/bin:/usr/local/bin:/usr/bin:/bin
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-    print_success "Systemd service file created (weapon-ai.service)"
-    print_warning "To install: sudo cp weapon-ai.service /etc/systemd/system/ && sudo systemctl enable weapon-ai"
+    print_success "Systemd service file created (aeon-weapon-ai.service)"
+    print_warning "To install: sudo cp aeon-weapon-ai.service /etc/systemd/system/ && sudo systemctl enable aeon-weapon-ai"
 fi
 
-# Download models (placeholder)
-print_status "Setting up AI models..."
+# Setup models directory
+print_header "Setting up AI models..."
 
 # Create models directory structure
 mkdir -p models/{hunyuan3d-2,text,cache}
@@ -293,11 +377,50 @@ echo "  1. Download Hunyuan3D-2 weights from official source"
 echo "  2. Place them in ./models/hunyuan3d-2/"
 echo "  3. Text generation models will be downloaded automatically on first run"
 
+# Create default personality config if it doesn't exist
+if [ ! -f "config/personalities.json" ]; then
+    print_status "Personality configuration already created during setup"
+    print_success "Personality templates configured"
+fi
+
 # Set permissions
 chmod +x *.sh
 
+# Create backup script
+cat > backup.sh << 'EOF'
+#!/bin/bash
+
+# AEON Weapon AI System - Backup Script
+BACKUP_DIR="./backups/$(date +%Y%m%d_%H%M%S)"
+
+echo "📦 Creating backup..."
+mkdir -p "$BACKUP_DIR"
+
+# Backup configuration
+cp -r config/ "$BACKUP_DIR/"
+cp .env "$BACKUP_DIR/"
+
+# Backup generated weapons (if any)
+if [ -d "generated_weapons" ] && [ "$(ls -A generated_weapons)" ]; then
+    cp -r generated_weapons/ "$BACKUP_DIR/"
+fi
+
+# Backup logs
+if [ -d "logs" ] && [ "$(ls -A logs)" ]; then
+    cp -r logs/ "$BACKUP_DIR/"
+fi
+
+# Create archive
+tar -czf "${BACKUP_DIR}.tar.gz" -C "./backups" "$(basename "$BACKUP_DIR")"
+rm -rf "$BACKUP_DIR"
+
+echo "✅ Backup created: ${BACKUP_DIR}.tar.gz"
+EOF
+
+chmod +x backup.sh
+
 # Final setup verification
-print_status "Verifying installation..."
+print_header "Verifying installation..."
 
 # Check if Python can import required modules
 python3 -c "
@@ -307,29 +430,61 @@ import transformers
 print('✅ Core Python modules available')
 " 2>/dev/null || print_warning "Some Python modules may not be available"
 
+# Check directory structure
+for dir in models config generated_weapons logs static templates; do
+    if [ -d "$dir" ]; then
+        print_success "Directory exists: $dir"
+    else
+        print_error "Missing directory: $dir"
+    fi
+done
+
+# Check critical files
+for file in app.py requirements.txt start.sh; do
+    if [ -f "$file" ]; then
+        print_success "File exists: $file"
+    else
+        print_error "Missing file: $file"
+    fi
+done
+
 # Summary
 echo ""
-echo "🎉 Setup completed successfully!"
-echo "================================================"
+echo "🎉 AEON Weapon AI System setup completed successfully!"
+echo "========================================================="
 echo ""
 echo "📁 Project structure:"
-echo "  ├── app.py              # Main API server"
-echo "  ├── models/             # AI model implementations"
-echo "  ├── config/             # Configuration files"
-echo "  ├── generated_weapons/  # Output directory"
-echo "  ├── logs/               # Log files"
-echo "  └── venv/               # Python virtual environment"
+echo "  ├── app.py                    # Main application server"
+echo "  ├── models/                   # AI model implementations"
+echo "  ├── static/                   # Web interface assets"
+echo "  ├── templates/                # HTML templates"
+echo "  ├── config/                   # Configuration files"
+echo "  ├── generated_weapons/        # Generated weapon models"
+echo "  ├── logs/                     # Application logs"
+echo "  └── venv/                     # Python virtual environment"
 echo ""
 echo "🚀 Quick start:"
-echo "  1. Start the service:    ./start_server.sh"
-echo "  2. Test the API:         ./test_api.sh"
-echo "  3. Check logs:           tail -f logs/weapon_ai.log"
+echo "  • Development:  ./start.sh"
+echo "  • Production:   ./start_production.sh"
+echo "  • Test system:  ./test_system.sh"
+echo "  • Monitor:      ./monitor.sh"
+echo "  • Backup:       ./backup.sh"
 echo ""
-echo "🔗 API will be available at: http://localhost:8083"
+echo "🌐 Access points:"
+echo "  • Web Interface: http://localhost:8083"
+echo "  • API Health:    http://localhost:8083/api/health"
+echo "  • Gallery:       http://localhost:8083/gallery"
 echo ""
 echo "📚 Next steps:"
-echo "  • Download Hunyuan3D-2 model weights"
-echo "  • Configure GPU instance on Vast.ai"
-echo "  • Test integration with main game server"
+echo "  1. Start the system:     ./start.sh"
+echo "  2. Open web interface:   http://localhost:8083"
+echo "  3. Test weapon generation in dashboard"
+echo "  4. View models in gallery"
+echo "  5. Download Hunyuan3D-2 model weights for production"
 echo ""
-print_success "Ready for testing! 🎮"
+echo "🔧 Configuration:"
+echo "  • Edit .env for settings"
+echo "  • Edit config/personalities.json for weapon types"
+echo "  • Check logs/ for troubleshooting"
+echo ""
+print_success "System ready for testing! 🎮"

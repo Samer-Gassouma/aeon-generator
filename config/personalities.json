@@ -1,0 +1,243 @@
+{
+    "aggressive_warrior": {
+      "name": "Aggressive Warrior",
+      "description": "Fierce combatants who prefer direct confrontation and powerful attacks",
+      "weapon_types": [
+        "axe", "sword", "mace", "warhammer", "claymore", "battle axe", 
+        "great sword", "flail", "morningstar", "halberd"
+      ],
+      "materials": [
+        "steel", "iron", "darksteel", "bloodsteel", "volcanic rock", 
+        "cursed metal", "dragonbone", "infernal iron", "war steel", "crimson ore"
+      ],
+      "effects": [
+        "flame", "lightning", "poison", "ice", "shadow", "rage", 
+        "fury", "berserker", "intimidation", "crushing blow"
+      ],
+      "descriptors": [
+        "brutal", "massive", "serrated", "jagged", "intimidating", 
+        "fearsome", "vicious", "savage", "menacing", "overwhelming",
+        "devastating", "merciless", "ruthless", "barbaric"
+      ],
+      "damage_modifier": 1.2,
+      "speed_modifier": 0.8,
+      "stat_preferences": {
+        "damage": "high",
+        "speed": "low",
+        "durability": "medium"
+      },
+      "color_theme": "#ef4444"
+    },
+    
+    "strategic_mage": {
+      "name": "Strategic Mage",
+      "description": "Intelligent spellcasters who rely on magic and tactical thinking",
+      "weapon_types": [
+        "staff", "wand", "orb", "tome", "crystal", "scepter", 
+        "focus", "grimoire", "rune stone", "arcane catalyst"
+      ],
+      "materials": [
+        "crystal", "enchanted wood", "mithril", "arcane stone", "starlight essence", 
+        "void crystal", "moonstone", "ethereal silver", "astral glass", "wizard oak"
+      ],
+      "effects": [
+        "arcane", "frost", "shadow", "holy", "time", "void", "mind", 
+        "teleportation", "illusion", "divination", "transmutation", "enchantment"
+      ],
+      "descriptors": [
+        "elegant", "mystical", "glowing", "ancient", "ethereal", 
+        "wise", "powerful", "scholarly", "arcane", "luminous",
+        "sophisticated", "calculated", "methodical", "precise"
+      ],
+      "damage_modifier": 0.9,
+      "speed_modifier": 1.3,
+      "stat_preferences": {
+        "damage": "medium",
+        "speed": "high",
+        "durability": "low"
+      },
+      "color_theme": "#3b82f6"
+    },
+    
+    "defensive_guardian": {
+      "name": "Defensive Guardian",
+      "description": "Protective fighters who excel at defense and supporting allies",
+      "weapon_types": [
+        "shield", "lance", "hammer", "defensive blade", "tower shield", 
+        "holy mace", "guardian spear", "protective barrier", "aegis", "bulwark"
+      ],
+      "materials": [
+        "blessed steel", "adamantite", "holy metal", "reinforced iron", "divine crystal", 
+        "light stone", "paladin silver", "sanctuary bronze", "guardian gold", "virtue steel"
+      ],
+      "effects": [
+        "protection", "barrier", "healing", "reflection", "blessing", 
+        "fortification", "sanctuary", "ward", "resilience", "salvation",
+        "purification", "divine favor", "stalwart", "unwavering"
+      ],
+      "descriptors": [
+        "sturdy", "protective", "radiant", "fortified", "noble", 
+        "steadfast", "unwavering", "honorable", "righteous", "stalwart",
+        "resilient", "dependable", "loyal", "valorous"
+      ],
+      "damage_modifier": 0.8,
+      "speed_modifier": 0.9,
+      "stat_preferences": {
+        "damage": "low",
+        "speed": "medium",
+        "durability": "high"
+      },
+      "color_theme": "#f59e0b"
+    },
+    
+    "agile_assassin": {
+      "name": "Agile Assassin",
+      "description": "Swift and stealthy fighters who strike from the shadows",
+      "weapon_types": [
+        "dagger", "blade", "throwing knife", "poison dart", "curved sword", 
+        "shadow blade", "stiletto", "assassin's edge", "silent death", "venom fang"
+      ],
+      "materials": [
+        "shadow steel", "quicksilver", "venom-coated metal", "silent steel", "void metal", 
+        "phantom iron", "nightmare alloy", "whisper bronze", "stealth carbon", "smoke glass"
+      ],
+      "effects": [
+        "poison", "shadow", "stealth", "bleeding", "paralysis", 
+        "invisibility", "silence", "backstab", "critical strike", "evasion",
+        "nimbleness", "deadly precision", "shadow step", "phantom strike"
+      ],
+      "descriptors": [
+        "swift", "silent", "deadly", "precise", "curved", 
+        "razor-sharp", "lethal", "stealthy", "shadowy", "elusive",
+        "nimble", "graceful", "fluid", "serpentine"
+      ],
+      "damage_modifier": 0.9,
+      "speed_modifier": 1.4,
+      "stat_preferences": {
+        "damage": "medium",
+        "speed": "very_high",
+        "durability": "very_low"
+      },
+      "color_theme": "#8b5cf6"
+    },
+    
+    "elemental_mage": {
+      "name": "Elemental Mage",
+      "description": "Wielders of natural forces and elemental magic",
+      "weapon_types": [
+        "elemental staff", "focus crystal", "elemental orb", "nature wand", "storm rod",
+        "fire staff", "ice shard", "earth hammer", "wind blade", "lightning spear"
+      ],
+      "materials": [
+        "elemental crystal", "living wood", "storm glass", "earth stone", "fire gem", 
+        "water pearl", "air essence", "nature's heart", "primal ore", "elemental core"
+      ],
+      "effects": [
+        "fire", "water", "earth", "air", "lightning", "nature", "storm",
+        "volcano", "tsunami", "earthquake", "tornado", "blizzard", "meteor"
+      ],
+      "descriptors": [
+        "elemental", "flowing", "crackling", "growing", "shifting", 
+        "natural", "primal", "wild", "untamed", "harmonious",
+        "balanced", "cyclical", "seasonal", "organic"
+      ],
+      "damage_modifier": 1.0,
+      "speed_modifier": 1.1,
+      "stat_preferences": {
+        "damage": "high",
+        "speed": "medium",
+        "durability": "medium"
+      },
+      "color_theme": "#10b981"
+    },
+    
+    "dark_necromancer": {
+      "name": "Dark Necromancer",
+      "description": "Masters of death magic and undead minions",
+      "weapon_types": [
+        "bone staff", "soul orb", "death scythe", "necrotic wand", "skull scepter",
+        "grave marker", "spirit blade", "corpse hammer", "undead focus", "reaper's tool"
+      ],
+      "materials": [
+        "bone", "obsidian", "soul stone", "necrotic crystal", "grave dirt",
+        "undead essence", "phantom metal", "death's touch", "corpse steel", "shadow bone"
+      ],
+      "effects": [
+        "death", "necromancy", "soul drain", "undead", "decay", "curse",
+        "life steal", "fear", "darkness", "corruption", "plague", "blight"
+      ],
+      "descriptors": [
+        "dark", "sinister", "corrupt", "withered", "haunted",
+        "macabre", "ghastly", "ominous", "foreboding", "cursed",
+        "malevolent", "twisted", "grotesque", "unholy"
+      ],
+      "damage_modifier": 1.1,
+      "speed_modifier": 0.9,
+      "stat_preferences": {
+        "damage": "high",
+        "speed": "low",
+        "durability": "medium"
+      },
+      "color_theme": "#6b46c1"
+    },
+    
+    "holy_paladin": {
+      "name": "Holy Paladin",
+      "description": "Divine warriors blessed with holy power and righteousness",
+      "weapon_types": [
+        "holy sword", "blessed mace", "divine hammer", "sacred lance", "righteous blade",
+        "celestial staff", "light spear", "heaven's edge", "divine justice", "purity blade"
+      ],
+      "materials": [
+        "blessed silver", "holy gold", "divine crystal", "celestial steel", "pure mithril",
+        "sanctified iron", "heaven's metal", "angel wing", "sacred stone", "virtue steel"
+      ],
+      "effects": [
+        "holy", "divine", "light", "healing", "purification", "exorcism",
+        "blessing", "consecration", "sanctuary", "redemption", "salvation", "grace"
+      ],
+      "descriptors": [
+        "holy", "divine", "blessed", "sacred", "pure",
+        "righteous", "celestial", "luminous", "sanctified", "hallowed",
+        "virtuous", "noble", "just", "glorious"
+      ],
+      "damage_modifier": 1.0,
+      "speed_modifier": 1.0,
+      "stat_preferences": {
+        "damage": "medium",
+        "speed": "medium",
+        "durability": "high"
+      },
+      "color_theme": "#fbbf24"
+    },
+    
+    "chaos_berserker": {
+      "name": "Chaos Berserker",
+      "description": "Unpredictable fighters who embrace chaos and randomness",
+      "weapon_types": [
+        "chaos blade", "random hammer", "wild axe", "unpredictable staff", "madness mace",
+        "disorder sword", "entropy weapon", "chance blade", "luck hammer", "chaos orb"
+      ],
+      "materials": [
+        "chaos steel", "random ore", "unstable crystal", "wild metal", "chance stone",
+        "entropy essence", "disorder alloy", "madness iron", "luck bronze", "chaos gem"
+      ],
+      "effects": [
+        "chaos", "random", "unpredictable", "wild", "madness", "disorder",
+        "entropy", "chance", "luck", "confusion", "frenzy", "berserker rage"
+      ],
+      "descriptors": [
+        "chaotic", "wild", "unpredictable", "mad", "frenzied",
+        "random", "unstable", "erratic", "volatile", "untamed",
+        "berserk", "savage", "uncontrolled", "raging"
+      ],
+      "damage_modifier": 1.3,
+      "speed_modifier": 1.2,
+      "stat_preferences": {
+        "damage": "very_high",
+        "speed": "high",
+        "durability": "very_low"
+      },
+      "color_theme": "#dc2626"
+    }
+  }
