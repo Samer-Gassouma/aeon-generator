@@ -33,13 +33,13 @@ if ! command -v git &> /dev/null; then
 fi
 
 # Clone repository if not exists
-if [ ! -d "aeon-weapon-generator" ]; then
+if [ ! -d "aeon-generator" ]; then
     echo "📥 Cloning repository..."
-    git clone https://github.com/YOUR_USERNAME/aeon-weapon-generator.git
-    cd aeon-weapon-generator
+    git clone https://github.com/Samer-Gassoum/aeon-generator.git
+    cd aeon-generator
 else
     echo "📁 Repository already exists, updating..."
-    cd aeon-weapon-generator
+    cd aeon-generator
     git pull
 fi
 
@@ -90,7 +90,7 @@ if command -v nvidia-smi &> /dev/null; then
         cd ../differentiable_renderer
         python3 setup.py install
         
-        cd /root/aeon-weapon-generator || cd ~/aeon-weapon-generator
+        cd /root/aeon-generator || cd ~/aeon-generator
         echo "✅ Hunyuan3D-2 installation completed"
     else
         echo "⏩ Skipping Hunyuan3D-2 installation (will run in fallback mode)"

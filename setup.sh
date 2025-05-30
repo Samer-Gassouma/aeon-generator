@@ -7,7 +7,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh.readlines() if line.strip() and not line.startswith("#")]
 
 setup(
-    name="aeon-weapon-generator",
+    name="aeon-generator",
     version="1.0.0",
     author="AEON Team",
     description="AI-powered weapon generation service for AEON MMORPG",
@@ -41,7 +41,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "aeon-weapon-generator=main:main",
+            "aeon-generator=main:main",
         ],
     },
 )
